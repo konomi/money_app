@@ -37,6 +37,8 @@ def calculate_totals(data):
         'one year ': (one_year_ago, now)
     }
 
+    genre = ["Food", "Insurance", "Transport", "Utility Bills", "Shopping", "Entertainment", "Rent", "Wifi", "Phone Bills", "Other"]
+
     # 计算总收入和支出
     totals = {}
     for period_name, (start_date, end_date) in time_periods.items():
@@ -49,15 +51,23 @@ def calculate_totals(data):
     
     start_date1 = st.date_input("start date", value=data['date'].min().date())
     end_date1 = st.date_input("end date", value=data['date'].max().date())
+    genre1 = st.selectbox("genre", genre)
 
     # 过滤数据
     if start_date1 or end_date1:
         data = data[data['date'] >= pd.to_datetime(start_date1)]
         data = data[data['date'] <= pd.to_datetime(end_date1)]
-        total_income = data[period_data['amount'] > 0]['amount'].sum()
-        total_spending = abs(data[period_data['amount'] <= 0]['amount'].sum())
+        total_income = data[data['amount'] > 0]['amount'].sum()
+        total_spending = abs(data[data['amount'] <= 0]['amount'].sum())
         st.write(f"total income in the period: {total_income}")
         st.write(f"total spending in the period: {total_spending}")
+
+    if genre1:
+        data = data[data['genre'] == genre1]
+        total_genre_spending = abs(data['amount'].sum())
+        st.write(f"total spending of the genre: {total_genre_spending}")
+    
+
 
     # 将计算结果保存到 df2.csv 文件中
     totals_df = pd.DataFrame([totals])
@@ -70,7 +80,7 @@ def main():
     st.title('Balance Book')
 
     # 上传 CSV 文件
-    uploaded_file = st.file_uploader("Please upload the csv file", type=["csv"])
+    uploaded_file = st.file_uploader("Please upload the finance file", type=["csv"])
 
     if uploaded_file is not None:
         # 加载数据
